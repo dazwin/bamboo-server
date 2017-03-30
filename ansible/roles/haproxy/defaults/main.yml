@@ -1,0 +1,19 @@
+haproxy_user: haproxy
+haproxy_group: "{{ haproxy_user }}"
+haproxy_uid: 119
+haproxy_gid: "{{ haproxy_uid }}"
+haproxy_data_dir: /var/lib/haproxy
+haproxy_enable_stats: true
+haproxy_ssl_dir: "/etc/haproxy"
+haproxy_ssl_pem_path: "{{ haproxy_ssl_dir }}"
+haproxy_sites:
+  localhost:
+    public_fqdn: localhost
+    ssl:
+      x509_country: "US"
+      x509_state: "State"
+      x509_locality: "City"
+      x509_org: "Organization"
+      x509_cn: "localhost"
+    nodes:
+      localhost: 3000

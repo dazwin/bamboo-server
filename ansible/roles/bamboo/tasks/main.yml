@@ -35,13 +35,15 @@
 # Bamboo MySQL connector installation
 #
 
-- name: Unarchive MySQL connector
-  unarchive: src="{{ bamboo_mysql_connector_src_url }}" remote_src=True dest="{{ bamboo_install_root }}" creates="{{ bamboo_install_root }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" user="{{ bamboo_user }}" group="{{ bamboo_group }}"
+- name: Download/unarchive MySQL connector
+  unarchive: src="{{ bamboo_mysql_connector_src_url }}" remote_src=True dest="{{ bamboo_install_root }}" creates="{{ bamboo_install_root }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" owner="{{ bamboo_user }}" group="{{ bamboo_group }}"
   notify:
   - Restart Bamboo
 
 - name: Symlink the MySQL connector to Bamboo
-  file: src="{{ bamboo_install_root }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" dest="{{ bamboo_install_dir }}/atlassian-bamboo/lib/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" state=link
+  file: src="{{ bamboo_install_root }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" dest="{{ bamboo_install_dir }}/lib/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" state=link
+  notify:
+  - Restart Bamboo
 
 #
 # Bamboo configuration

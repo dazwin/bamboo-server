@@ -1,0 +1,13 @@
+haproxy_ssl: selfsigned
+haproxy_public_alias: local.bamboo.net
+haproxy_sites:
+  bamboo:
+    public_fqdn: local.bamboo.net
+    ssl:
+      x509_country: "US"
+      x509_state: "California"
+      x509_locality: "Santa Monica"
+      x509_org: "Engineering"
+      x509_cn: "local.bamboo.net"
+    nodes:
+      localhost: 8085

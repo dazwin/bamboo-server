@@ -1,0 +1,64 @@
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    chroot {{ haproxy_data_dir }}
+    user haproxy
+    group haproxy
+    daemon
+    tune.ssl.default-dh-param 2048
+
+defaults
+    log	global
+    mode http
+    option httplog
+    option dontlognull
+    timeout connect 5000
+    timeout client 50000
+    timeout server 50000
+{% if haproxy_enable_stats %}
+    stats enable
+    stats uri /haproxy-status
+{% endif %}
+    errorfile 400 /etc/haproxy/errors/400.http
+    errorfile 403 /etc/haproxy/errors/403.http
+    errorfile 408 /etc/haproxy/errors/408.http
+    errorfile 500 /etc/haproxy/errors/500.http
+    errorfile 502 /etc/haproxy/errors/502.http
+    errorfile 503 /etc/haproxy/errors/503.http
+    errorfile 504 /etc/haproxy/errors/504.http
+
+frontend http
+    bind *:80
+    mode http
+{% for name, site in haproxy_sites.iteritems() %}
+    redirect prefix https://{{ site.public_fqdn }} code 301 unless { hdr(host) -i {{ site.public_fqdn }} }{% if site.ssl.force_redirect|default(false) %} { hdr(X-Forwarded-Proto) https }{% endif %}
+
+    acl host_{{ name }} hdr(host) -i {{ site.public_fqdn }}
+    use_backend {{ name }}_cluster if host_{{ name }}
+{% endfor %}
+
+{% for name, site in haproxy_sites.iteritems() %}
+frontend https
+    bind *:443 ssl crt {{ haproxy_ssl_pem_path }}/{{ name }}.pem
+    mode http
+{% if site.ssl %}
+    redirect prefix https://{{ site.public_fqdn }} code 301 unless { hdr(host) -i {{ site.public_fqdn }} }
+    acl host_{{ name }} hdr(host) -i {{ site.public_fqdn }}
+    use_backend {{ name }}_cluster if host_{{ name }}
+{% endif %}
+{% endfor %}
+
+{% for name, site in haproxy_sites.iteritems() %}
+  {% if site.nodes|length > 0 %}
+backend {{ name }}_cluster
+    mode http
+    balance roundrobin
+    option forwardfor
+{% for node, port in site.nodes.iteritems() %}
+    server {{ name }}{{ loop.index0 }} {{ node }}:{{ port }} check
+{% endfor %}
+    http-request set-header X-Forwarded-Port %[dst_port] unless { hdr_cnt(X-Forwarded-Port) gt 0 }
+    http-request add-header X-Forwarded-Proto https if { ssl_fc }
+  {% endif %}
+{% endfor %}
+

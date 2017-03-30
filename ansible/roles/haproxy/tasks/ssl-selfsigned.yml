@@ -1,0 +1,7 @@
+- name: Create self-signed certificate
+  command: "openssl req -new -nodes -x509 -subj \"/C={{ item.value.ssl.x509_country }}/ST={{ item.value.ssl.x509_state }}/L={{ item.value.ssl.x509_locality }}/O={{ item.value.ssl.x509_org }}/CN={{ item.value.ssl.x509_cn }}\" -days 3650 -keyout \"{{ haproxy_ssl_pem_path }}/{{ item.key }}.pem\" -out \"{{ haproxy_ssl_pem_path }}/{{ item.key }}.pem\" -extensions v3_ca creates=\"{{ haproxy_ssl_pem_path }}/{{ item.key }}.pem\""
+  args:
+    creates: "{{ haproxy_ssl_pem_path }}/{{ item.key }}.pem"
+  with_dict: "{{ haproxy_sites }}"
+  notify:
+    - Restart HAProxy

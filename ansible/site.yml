@@ -10,3 +10,4 @@
   roles:
   - mysql
   - bamboo
+  - haproxy
