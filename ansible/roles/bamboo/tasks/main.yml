@@ -7,7 +7,37 @@
   when: bamboo_user != "{{ lookup('env', 'USER') }}"
 
 - name: Create Bamboo user
-  user: name={{ bamboo_user }} uid={{ bamboo_gid }} system=yes group={{ bamboo_group }}
+  user: name={{ bamboo_user }} uid={{ bamboo_gid }} system=yes group={{ bamboo_group }} home={{ bamboo_home }}
   when: bamboo_user != "{{ lookup('env', 'USER') }}"
 
 - include: mysql.yml
+
+#
+# Bamboo installation
+#
+
+- name: Create Bamboo home directory
+  file: path="{{ bamboo_home }}" state=directory owner="{{ bamboo_user }}" group="{{ bamboo_group }}"
+
+- name: Create Bamboo Atlassian directory
+  file: path="{{ bamboo_home }}/atlassian-bamboo" state=directory owner="{{ bamboo_user }}" group="{{ bamboo_group }}"
+
+- name: Download/unarchive Bamboo package
+  unarchive: src="{{ bamboo_src_url }}" dest="{{ bamboo_install_root }}" remote_src=True creates="{{ bamboo_install_root }}/atlassian-bamboo-{{ bamboo_version }}/README.txt"
+
+- name: Create Bamboo symlink
+  file: src="{{ bamboo_install_root }}/atlassian-bamboo-{{ bamboo_version }}" dest="{{ bamboo_install_dir }}" state=link
+
+- name: Configure Bamboo home
+  template: src=bamboo-init.properties.j2 dest="{{ bamboo_install_dir }}/atlassian-bamboo/WEB-INF/classes/bamboo-init.properties"
+
+#
+# Bamboo MySQL connector installation
+#
+
+- name: Unarchive MySQL connector
+  unarchive: src="{{ bamboo_mysql_connector_src_url }}" remote_src=True dest="{{ bamboo_install_root }}" creates="{{ bamboo_install_root }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar"
+
+- name: Symlink the MySQL connector to Bamboo
+  file: src="{{ bamboo_install_root }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" dest="{{ bamboo_install_dir }}/atlassian-bamboo/lib/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" state=link
+
