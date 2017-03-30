@@ -2,6 +2,9 @@
 # Bamboo MySQL configuration
 #
 
+- name: Install Python MySQL module (required by Ansible)
+  apt: name=python-mysqldb state=latest
+
 - name: Create empty MySQL database
   mysql_db: name="{{ bamboo_dbname }}" collation=utf8_bin encoding=utf8
 

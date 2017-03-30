@@ -2,10 +2,8 @@
 # MySQL pre-installation
 #
 
-- name: Install Apt dependencies
-  local_action: apt name={{ item }} state=latest
-  with_items:
-    - python-mysqldb # Needed by the Ansible MySQL module (easier to install than pip MySQL-python)
+- name: Install Python MySQL module (required by Ansible)
+  apt: name=python-mysqldb state=latest
 
 - name: Create MySQL group
   group: name="{{ mysql_user }}" gid="{{ mysql_gid }}" system=yes

@@ -2,3 +2,16 @@
   roles:
     - { role: aws-client, become: yes }
     - aws-ec2-server
+
+- name: Install Python 2
+  hosts: all,!builder,!provisioner
+  gather_facts: no
+  pre_tasks:
+    - raw: sudo apt-get -y install python-simplejson
+
+- hosts: bamboo
+  become: yes
+  roles:
+  - mysql
+  - bamboo
+  - haproxy
