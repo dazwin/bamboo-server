@@ -1,0 +1,4 @@
+bamboo_uid: 1007
+bamboo_gid: "{{ bamboo_uid }}"
+bamboo_user: "bamboo"
+bamboo_group: "{{ bamboo_user }}"

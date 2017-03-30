@@ -1,0 +1,11 @@
+- name: Register Java package repository
+  apt_repository: repo="ppa:webupd8team/java" state=present
+
+- name: Accept Oracle Java license
+  debconf: name='oracle-java7-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+
+- name: Install Java
+  apt: pkg=oracle-java8-installer state=latest update_cache=true
+
+- name: Configure Oracle Java 8 as the default Java environment
+  apt: name=oracle-java8-set-default state=latest

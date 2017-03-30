@@ -1,0 +1,11 @@
+- name: Install Python 2
+  hosts: all,!builder,!provisioner
+  gather_facts: no
+  pre_tasks:
+    - raw: sudo apt-get -y install python-simplejson
+
+- name: Install/configure Bamboo
+  hosts: all
+  become: yes
+  roles:
+  - bamboo
