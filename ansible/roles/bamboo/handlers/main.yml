@@ -1,2 +1,6 @@
+- name: Reload systemd
+  command: "/bin/systemctl --system daemon-reload"
+  tags: services
+
 - name: Restart Bamboo 
   service: name=bamboo state=restarted enabled=true

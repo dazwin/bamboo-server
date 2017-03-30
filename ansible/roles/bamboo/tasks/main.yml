@@ -52,9 +52,16 @@
 - name: Configure Bamboo server.xml
   template: src=server.xml.j2 dest="{{ bamboo_install_dir }}/conf/server.xml"
 
+#- name: Create daemon configuration
+#  template: src=init.d.j2 dest=/etc/init.d/bamboo mode=a+x
+#  notify:
+#  - Reload systemd
+#  - Restart Bamboo
+
 - name: Create daemon configuration
-  template: src=init.d.j2 dest=/etc/init.d/bamboo mode=a+x
+  template: src=systemd.j2 dest=/etc/systemd/system/bamboo.service
   notify:
+  - Reload systemd
   - Restart Bamboo
 
 - meta: flush_handlers
