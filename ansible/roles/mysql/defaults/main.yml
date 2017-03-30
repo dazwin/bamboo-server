@@ -1,0 +1,6 @@
+mysql_uid: 1008
+mysql_gid: "{{ mysql_uid }}"
+mysql_user: "mysql"
+mysql_group: "{{ mysql_user }}"
+mysql_data_dir: /var/lib/mysql
+mysql_log_dir: /var/log/mysql

@@ -1,0 +1,12 @@
+#
+# Bamboo MySQL configuration
+#
+
+- name: Create empty MySQL database
+  mysql_db: name="{{ bamboo_dbname }}" collation=utf8_bin encoding=utf8
+
+- name: Create a MySQL user
+  mysql_user: name="{{ bamboo_dbusername }}" password="{{ bamboo_dbpassword }}" priv="*.*:ALL"
+
+- name: Grant remote MySQL access
+  mysql_user: name="{{ bamboo_dbusername }}" password="{{ bamboo_dbpassword }}" host="%" priv="*.*:ALL"

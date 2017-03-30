@@ -9,3 +9,5 @@
 - name: Create Bamboo user
   user: name={{ bamboo_user }} uid={{ bamboo_gid }} system=yes group={{ bamboo_group }}
   when: bamboo_user != "{{ lookup('env', 'USER') }}"
+
+- include: mysql.yml

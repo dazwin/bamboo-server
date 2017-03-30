@@ -8,4 +8,5 @@
   hosts: all
   become: yes
   roles:
+  - mysql
   - bamboo

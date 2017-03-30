@@ -1,0 +1,5 @@
+[mysqld]
+user         = {{ mysql_user }}
+datadir      = {{ mysql_data_dir }}
+bind-address = *
+log_error    = {{ mysql_log_dir }}/error.log

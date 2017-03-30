@@ -1,0 +1,36 @@
+#
+# MySQL pre-installation
+#
+
+- name: Install Apt dependencies
+  local_action: apt name={{ item }} state=latest
+  with_items:
+    - python-mysqldb # Needed by the Ansible MySQL module (easier to install than pip MySQL-python)
+
+- name: Create MySQL group
+  group: name="{{ mysql_user }}" gid="{{ mysql_gid }}" system=yes
+
+- name: Create MySQL user
+  user: name="{{ mysql_user }}" home="{{ mysql_data_dir }}" uid="{{ mysql_uid }}" system=yes group="{{ mysql_group }}" createhome=no
+
+- name: Create MySQL data directory
+  file: path="{{ mysql_data_dir }}" state=directory recurse=yes owner="{{ mysql_user }}" group="{{ mysql_group }}"
+
+- name: Create MySQL logs directory
+  file: path="{{ mysql_log_dir }}" state=directory recurse=yes owner="{{ mysql_user }}" group="{{ mysql_group }}"
+
+#
+# MySQL installation
+#
+
+- name: Install MySQL
+  apt: name=mysql-server
+
+#
+# MySQL configuration
+#
+
+- name: Configure MySQL
+  template: src=mysqld.local.cnf.j2 dest="/etc/mysql/mysql.conf.d/mysqld.local.cnf"
+  notify:
+    - Restart MySQL
