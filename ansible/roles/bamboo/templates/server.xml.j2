@@ -31,8 +31,10 @@
 
     <!--APR library loader. Documentation at /docs/apr.html -->
     <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on"/>
+{% if bamboo_version|version_compare('5.15', operator='lt') %}
     <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
     <Listener className="org.apache.catalina.core.JasperListener"/>
+{% endif %}
     <!-- JMX Support for the Tomcat server. Documentation at /docs/non-existent.html -->
     <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener"/>
 
@@ -57,6 +59,9 @@
                    maxHttpHeaderSize="8192"
                    protocol="HTTP/1.1"
                    useBodyEncodingForURI="true"
+{% if bamboo_version|version_compare('5.15', operator='ge') %}
+                   URIEncoding="UTF-8"
+{% endif %}
                    redirectPort="8443"
                    acceptCount="100"
                    disableUploadTimeout="true"
@@ -75,10 +80,31 @@
                    maxHttpHeaderSize="8192"
                    protocol="HTTP/1.1"
                    useBodyEncodingForURI="true"
+{% if bamboo_version|version_compare('5.15', operator='ge') %}
+                   URIEncoding="UTF-8"
+{% endif %}
                    redirectPort="8443"
                    acceptCount="100"
                    disableUploadTimeout="true" />
 
+{% if bamboo_version|version_compare('5.15', operator='ge') %}
+        <!--
+        ====================================================================================
+        To run Bamboo via HTTPS:
+             * Uncomment the Connector below
+             * Execute:
+                 %JAVA_HOME%\bin\keytool -genkey -alias tomcat -keyalg RSA (Windows)
+                 $JAVA_HOME/bin/keytool -genkey -alias tomcat -keyalg RSA  (Unix)
+               with a password value of "changeit" for both the certificate and the keystore itself.
+             * Restart and visit https://localhost:8443/
+
+             For more info, see :
+              https://confluence.atlassian.com/display/BAMBOO/Securing+Bamboo+with+Tomcat+using+SSL
+              and
+              http://tomcat.apache.org/tomcat-8.0-doc/ssl-howto.html
+        ====================================================================================
+        -->
+{% else %}
         <!--
         ====================================================================================
 
@@ -103,15 +129,27 @@
               
         ====================================================================================
         -->
+{% endif %}
+
         <!--
-            <Connector port="8443" maxHttpHeaderSize="8192" SSLEnabled="true"
-              maxThreads="150" minSpareThreads="25"
-              enableLookups="false" disableUploadTimeout="true"
-              acceptCount="100" scheme="https" secure="true"
-              clientAuth="false" sslProtocol="TLS" useBodyEncodingForURI="true"/>
+        <Connector
+            port="8443"
+
+            maxThreads="150" minSpareThreads="25"
+            connectionTimeout="20000"
+            disableUploadTimeout="true"
+            acceptCount="100"
+
+            enableLookups="false"
+            maxHttpHeaderSize="8192"
+
+            useBodyEncodingForURI="true"
+            URIEncoding="UTF-8"
+
+            scheme="https" secure="true" SSLEnabled="true" sslProtocol="TLS"
+            clientAuth="false"
+        />
         -->
-
-
         <!--
          ====================================================================================
          
@@ -143,6 +181,10 @@
             <Valve className="org.apache.catalina.valves.AccessLogValve" resolveHosts="false"
                    pattern="%a %t &quot;%m %U%q %H&quot; %s %b %D &quot;%{Referer}i&quot; &quot;%{User-Agent}i&quot;"/>
 
+{% if bamboo_version|version_compare('5.15', operator='ge') %}
+            <!-- StuckThreadDetectionValve added below to print stack traces if a thread has been stuck for 60 seconds -->
+            <Valve className="org.apache.catalina.valves.StuckThreadDetectionValve" threshold="60" />
+{% endif %}
         </Engine>
     </Service>
 </Server>
