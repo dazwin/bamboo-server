@@ -23,7 +23,7 @@
   file: path="{{ bamboo_home }}/atlassian-bamboo" state=directory owner="{{ bamboo_user }}" group="{{ bamboo_group }}"
 
 - name: Download/unarchive Bamboo package
-  unarchive: src="{{ bamboo_src_url }}" dest="{{ bamboo_install_root }}" remote_src=True creates="{{ bamboo_install_root }}/atlassian-bamboo-{{ bamboo_version }}/README.txt"
+  unarchive: src="{{ bamboo_src_url }}" dest="{{ bamboo_install_root }}" remote_src=True owner="{{ bamboo_user }}" group="{{ bamboo_group }}" creates="{{ bamboo_install_root }}/atlassian-bamboo-{{ bamboo_version }}/README.txt"
 
 - name: Create Bamboo symlink
   file: src="{{ bamboo_install_root }}/atlassian-bamboo-{{ bamboo_version }}" dest="{{ bamboo_install_dir }}" state=link
@@ -36,8 +36,27 @@
 #
 
 - name: Unarchive MySQL connector
-  unarchive: src="{{ bamboo_mysql_connector_src_url }}" remote_src=True dest="{{ bamboo_install_root }}" creates="{{ bamboo_install_root }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar"
+  unarchive: src="{{ bamboo_mysql_connector_src_url }}" remote_src=True dest="{{ bamboo_install_root }}" creates="{{ bamboo_install_root }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" user="{{ bamboo_user }}" group="{{ bamboo_group }}"
+  notify:
+  - Restart Bamboo
 
 - name: Symlink the MySQL connector to Bamboo
   file: src="{{ bamboo_install_root }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" dest="{{ bamboo_install_dir }}/atlassian-bamboo/lib/mysql-connector-java-{{ bamboo_mysql_connector_version }}-bin.jar" state=link
+
+#
+# Bamboo configuration
+#
+
+- name: Configure Bamboo server.xml
+  template: src=server.xml.j2 dest="{{ bamboo_install_dir }}/conf/server.xml"
+
+- name: Create daemon configuration
+  template: src=init.d.j2 dest=/etc/init.d/bamboo mode=a+x
+  notify:
+  - Restart Bamboo
+
+- meta: flush_handlers
+
+- name: Start Bamboo
+  service: name=bamboo state=started enabled=true
 
