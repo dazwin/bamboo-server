@@ -1,0 +1,10 @@
+- name: Install AWS apt dependencies
+  become: yes
+  apt: name={{ item }} state=latest
+  with_items:
+  - python-pip
+  - awscli
+
+- name: Install AWS python dependencies
+  become: yes
+  pip: name=boto state=latest

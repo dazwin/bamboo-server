@@ -1,0 +1,4 @@
+- hosts: builder
+  roles:
+    - { role: aws-client, become: yes }
+    - aws-ec2-server
