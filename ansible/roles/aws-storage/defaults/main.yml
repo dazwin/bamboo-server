@@ -1,0 +1,14 @@
+aws_access_key:
+aws_secret_key:
+
+aws_storage_device: "/dev/xvdf"
+aws_storage_path: "/mnt/storage"
+aws_storage_volume:
+aws_storage_region: "{{ aws_region }}"
+aws_storage_install_root: /opt
+aws_storage_install_dir: "{{ aws_storage_install_root }}/aws-storage"
+aws_storage_snapshot_schedule: "0 10 * * *"
+aws_storage_fstab_only: false
+aws_storage_keep_daily: 7
+aws_storage_keep_monthly: 12
+aws_storage_description:

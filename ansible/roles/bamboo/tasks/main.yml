@@ -69,3 +69,9 @@
 - name: Start Bamboo
   service: name=bamboo state=started enabled=true
 
+#
+# Bamboo post-installation
+#
+
+- name: Allow sudo access without a password
+  template: src=sudoers.j2 dest=/etc/sudoers.d/90-{{ bamboo_user }}

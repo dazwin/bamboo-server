@@ -1,0 +1,26 @@
+- name: Enable the multiverse repository
+  apt_repository: repo="deb http://archive.ubuntu.com/ubuntu {{ansible_distribution_release}} multiverse"
+
+- name: Install AWS storage dependencies
+  apt: name=ec2-api-tools state=latest
+
+- name: Create the AWS snapshot installation directory
+  file: state=directory path="{{ aws_storage_install_dir }}"
+
+- name: Create the AWS snapshot binary directory
+  file: state=directory path="{{ aws_storage_install_dir }}/bin"
+
+- name: Create the AWS snapshot config directory
+  file: state=directory path="{{ aws_storage_install_dir }}/etc"
+
+- name: Install the AWS snapshot script
+  template: src=create-snapshot.j2 dest="{{ aws_storage_install_dir }}/bin/create-snapshot"
+
+- name: Install the AWS snapshot config
+  template: src=aws-storage.conf.j2 dest="{{ aws_storage_install_dir }}/etc/aws-storage.conf"
+
+- name: Make the AWS snapshot script executable
+  file: path="{{ aws_storage_install_dir }}/bin/create-snapshot" mode=a+x
+
+- name: Create the AWS snapshot cron job
+  template: src=cron.d.j2 dest=/etc/cron.d/create-snapshot

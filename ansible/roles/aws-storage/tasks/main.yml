@@ -1,0 +1,20 @@
+- name: Add expire snapshot PPA
+  apt_repository: repo='ppa:alestic' state=present
+
+- name: Install AWS storage dependencies
+  apt: name="{{ item }}" state=latest
+  with_items:
+  - xfsprogs
+  - ec2-expire-snapshots
+
+- name: Create block storage
+  filesystem: dev="{{ aws_storage_device }}" fstype=xfs
+  when: not(aws_storage_fstab_only|bool)
+
+- name: Create storage path
+  file: path={{ aws_storage_path }} state=directory
+
+- name: Mount block storage
+  mount: name={{ aws_storage_path }} src={{ aws_storage_device }} fstype=xfs opts="nofail" state={{ aws_storage_fstab_only|bool|ternary('present', 'mounted') }}
+
+- include: snapshots.yml

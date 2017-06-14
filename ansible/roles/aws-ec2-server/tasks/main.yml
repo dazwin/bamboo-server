@@ -2,17 +2,22 @@
 # Create an EC2 server instance
 #
 
+- name: Set existing instance facts
+  set_fact: ec2_instance_id="{{ lookup('file', aws_ec2_instance_id_file) }}"
+  ignore_errors: True
+
 - name: Check for an existing instance
   ec2_remote_facts:
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
     region: "{{ aws_ec2_region }}"
     filters:
-      instance-id: "{{ aws_ec2_instance_id }}"
+      instance-id: "{{ ec2_instance_id }}"
   register: ec2_existing_server
+  when: ec2_instance_id|default('')
 
 - name: Set existing instance facts
-  set_fact: ec2_instance_id="{{ ec2_existing_server.instances[0].id }}" ec2_instance_ip="{{ ec2_existing_server.instances[0].public_ip_address }}"
+  set_fact: ec2_instance_ip="{{ ec2_existing_server.instances[0].public_ip_address }}"
   when: not(ec2_existing_server|skipped)
 
 - name: Create the SSH key file directory
@@ -42,15 +47,7 @@
     region: "{{ aws_ec2_region }}"
     name: "{{ aws_ec2_security_group }}"
     description: "Security group for EC2 image"
-    rules:
-    - proto: tcp
-      from_port: 22
-      to_port: 22
-      cidr_ip: 0.0.0.0/0
-    - proto: tcp
-      from_port: 443
-      to_port: 443
-      cidr_ip: 0.0.0.0/0
+    rules: "{{ aws_ec2_inbound_rules }}"
     rules_egress:
     - proto: all
       from_port: 0
@@ -68,14 +65,10 @@
     group: "{{ aws_ec2_security_group }}"
     wait: yes
   register: ec2_new_server
-  when: not(ec2_instance_id)
-
-- name: Add the instance(s) to known hosts
-  local_action: command sh -c 'ssh-keyscan -t rsa {{ ec2_instance_ip }} >> {{ ansible_env.HOME }}/.ssh/known_hosts'
-  when: not(ec2_new_server|skipped)
+  when: ec2_existing_server|skipped
 
 - name: Set new instance facts
-  set_fact: ec2_instance_id="{{ ec2_new_server.instances[0] }}" ec2_instance_ip="{{ ec2_new_server.instances[0].public_ip }}"
+  set_fact: ec2_instance_id="{{ ec2_new_server.instance_ids[0] }}" ec2_instance_ip="{{ ec2_new_server.instances[0].public_ip }}"
   when: not(ec2_new_server|skipped)
 
 - debug: msg="EC2 instance id is {{ ec2_instance_id }} at {{ ec2_instance_ip }}"
@@ -85,5 +78,9 @@
 
 - name: Wait for instance SSH to become available
   wait_for: port=22 host="{{ ec2_instance_ip }}" delay=30 timeout=600
+
+- name: Add the instance(s) to known hosts
+  local_action: command sh -c 'ssh-keyscan -t rsa {{ ec2_instance_ip }} >> {{ ansible_env.HOME }}/.ssh/known_hosts'
+  when: not(ec2_new_server|skipped)
 
 - add_host: hostname={{ ec2_instance_ip }} groupname={{ aws_ec2_ansible_group }} ansible_ssh_user=ubuntu ansible_ssh_private_key_file={{ aws_ec2_local_key_file|default('~/.ssh/id_rsa') }}

@@ -11,11 +11,16 @@
 - name: Create MySQL user
   user: name="{{ mysql_user }}" home="{{ mysql_data_dir }}" uid="{{ mysql_uid }}" system=yes group="{{ mysql_group }}" createhome=no
 
-- name: Create MySQL data directory
-  file: path="{{ mysql_data_dir }}" state=directory recurse=yes owner="{{ mysql_user }}" group="{{ mysql_group }}"
+#- name: Create MySQL data directory
+#  file: path="{{ mysql_data_dir }}" state=directory recurse=yes owner="{{ mysql_user }}" group="{{ mysql_group }}"
 
 - name: Create MySQL logs directory
   file: path="{{ mysql_log_dir }}" state=directory recurse=yes owner="{{ mysql_user }}" group="{{ mysql_group }}"
+
+- name: Configure apparmor for MySQL
+  template: src="apparmor.j2" dest="/etc/apparmor.d/local/usr.sbin.mysqld"
+  notify:
+    - Reload MySQL apparmor
 
 #
 # MySQL installation
@@ -32,3 +37,6 @@
   template: src=mysqld.local.cnf.j2 dest="/etc/mysql/mysql.conf.d/mysqld.local.cnf"
   notify:
     - Restart MySQL
+
+- name: Create empty MySQL database
+  command: mysqld --initialize-insecure --user={{ mysql_user }} --datadir={{ mysql_data_dir }} creates={{ mysql_data_dir }}/ibdata1

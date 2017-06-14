@@ -12,6 +12,4 @@
 - hosts: bamboo
   become: yes
   roles:
-  - mysql
-  - bamboo
-  - haproxy
+  - aws-storage

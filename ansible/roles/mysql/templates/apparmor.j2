@@ -1,0 +1,14 @@
+# Site-specific additions and overrides for usr.sbin.tcpdump.
+# For more details, please see /etc/apparmor.d/local/README.
+
+/usr/sbin/mysqld {
+# Allow data dir access
+  {{ mysql_data_dir }}/ r,
+  {{ mysql_data_dir }}/** rwk,
+
+# Allow log file access
+  {{ mysql_log_dir }}/mysql.err rw,
+  {{ mysql_log_dir }}/mysql.log rw,
+  {{ mysql_log_dir }}/mysql/ r,
+  {{ mysql_log_dir }}/mysql/** rw,
+}

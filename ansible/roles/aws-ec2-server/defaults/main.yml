@@ -6,3 +6,12 @@ aws_ec2_key_name: ANSIBLE_DEFAULT_KEY
 aws_ec2_security_group: ANSIBLE_DEFAULT_SECURITY_GROUP
 aws_ec2_instance_type: t2.small
 aws_ec2_ansible_group: aws_ec2_servers
+aws_ec2_inbound_rules:
+  - proto: tcp
+    from_port: 22
+    to_port: 22
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: 0.0.0.0/0

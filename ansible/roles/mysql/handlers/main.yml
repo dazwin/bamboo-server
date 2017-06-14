@@ -1,2 +1,5 @@
 - name: Restart MySQL
   service: name=mysql state=restarted
+
+- name: Reload MySQL apparmor
+  command: /sbin/apparmor_parser -r /etc/apparmor.d/usr.sbin.mysqld

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+source "{{ aws_storage_install_dir }}/etc/aws-storage.conf"
+
+NOW=`date +'%c'`
+
+# Create the snapshot
+RESULT=`ec2-create-snapshot --region "${AWS_REGION}" -d "Snapshot for ${AWS_STORAGE_DESCRIPTION} on ${NOW}" "${AWS_STORAGE_VOLUME}"`
+SNAPSHOT_ID=`echo "${RESULT}" | cut -f2`
+
+# Expire old snapshots
+ec2-expire-snapshots --region "${AWS_REGION}" --keep-first-daily "{{ aws_storage_keep_daily }}" --keep-first-monthly "{{ aws_storage_keep_monthly }}" "${AWS_STORAGE_VOLUME}"
